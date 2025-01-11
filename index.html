@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="이 사이트는 장병내일준비적금 계산기를 제공합니다.">
+  <meta name="keywords" content="장병내일준비적금, 군인적금 계산기, GitHub Pages, 군적금 계산기">
+  <meta name="author" content="Leehyunbin0131">
+  <title>장병내일준비적금 계산기</title>
+  <!-- Bootstrap 5 CSS -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <div class="container my-5">
+    <h1 class="mb-4 text-center">장병내일준비적금 계산기</h1>
+
+    <!-- 입력 폼 -->
+    <div class="card p-4 mb-4">
+      <h5 class="card-title mb-3">기본 정보 입력</h5>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="startDate" class="form-label">입대일(YYYY-MM-DD)</label>
+          <input type="date" id="startDate" class="form-control" />
+        </div>
+        <div class="col-md-6">
+          <label for="branch" class="form-label">군종 선택</label>
+          <select id="branch" class="form-select">
+            <option value="army">육군 (18개월)</option>
+            <option value="navy">해군 (20개월)</option>
+            <option value="airforce">공군 (21개월)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 연도별 납입액 입력 -->
+    <div class="card p-4 mb-4">
+      <h5 class="card-title mb-3">연도별 월 납입액 설정</h5>
+      <p class="small text-muted">
+        예) 2023년, 2024년까지 40만원, 2025년부터 55만원 등 원하는 금액을 입력하세요.
+      </p>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+          <thead class="table-secondary">
+            <tr>
+              <th scope="col">연도</th>
+              <th scope="col">월 납입액(원)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">2022</th>
+              <td>
+                <input type="number" id="deposit2022" class="form-control" placeholder="예: 400000" />
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">2023</th>
+              <td>
+                <input type="number" id="deposit2023" class="form-control" placeholder="예: 400000" />
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">2024</th>
+              <td>
+                <input type="number" id="deposit2024" class="form-control" placeholder="예: 400000" />
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">2025 이후</th>
+              <td>
+                <input type="number" id="deposit2025" class="form-control" placeholder="예: 550000" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 계산하기 버튼 -->
+    <div class="text-center mb-4">
+      <button 
+        class="btn btn-primary btn-lg px-5" 
+        onclick="calculate()"
+      >
+        계산하기
+      </button>
+    </div>
+
+    <!-- 결과 표시 카드 -->
+    <div id="result" class="card p-4 d-none">
+      <h5 class="card-title mb-3">계산 결과</h5>
+      <div id="resultContent"></div>
+    </div>
+  </div>
+
+  <!-- 하단 영역 -->
+  <footer class="text-center py-4 mt-5 bg-light">
+    <p class="mb-1">제작자: <strong>Leehyunbin</strong></p>
+    <p class="mb-1">
+      <a href="https://github.com/Leehyunbin0131" target="_blank" rel="noopener noreferrer">
+        GitHub 프로필 바로가기
+      </a>
+    </p>
+    <p class="mb-0">
+      &copy; 2025 <strong>Leehyunbin</strong>. All rights reserved.
+    </p>
+  </footer>
+
+  <!-- Bootstrap 5 JS (옵션: 팝오버, 토스트 등 필요 시) -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
+  <!-- 계산 로직 -->
+  <script src="script.js"></script>
+</body>
+</html>
