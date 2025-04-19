@@ -193,7 +193,7 @@
             </div>
           </div>
 
-          <!-- 연도별 납입액 카드 -->
+          <!-- 연도별 납입액 카드 - 만원 단위 입력으로 변경 -->
           <div class="card p-4 mb-4">
             <h5 class="card-title mb-3 d-flex align-items-center">
               <i class="fas fa-coins me-2 text-primary"></i>연도별 월 납입액 설정
@@ -201,13 +201,14 @@
             </h5>
             <p class="small text-muted mb-3">
               입대 시기와 전역 시기에 따라 월 납입액을 다르게 설정할 수 있습니다.
+              <strong>※ 만원 단위로 입력하세요. (예: 40만원 → 40)</strong>
             </p>
             <div class="table-responsive">
               <table class="table table-bordered align-middle text-center">
                 <thead class="table-light">
                   <tr>
                     <th scope="col">연도</th>
-                    <th scope="col">월 납입액(원)</th>
+                    <th scope="col">월 납입액(만원)</th>
                     <th scope="col">매칭 비율</th>
                   </tr>
                 </thead>
@@ -215,28 +216,28 @@
                   <tr>
                     <th scope="row">2022</th>
                     <td>
-                      <input type="number" id="deposit2022" class="form-control" placeholder="0~400,000" min="0" max="400000" />
+                      <input type="number" id="deposit2022" class="form-control" placeholder="0~40" min="0" max="40" />
                     </td>
                     <td>33%</td>
                   </tr>
                   <tr>
                     <th scope="row">2023</th>
                     <td>
-                      <input type="number" id="deposit2023" class="form-control" placeholder="0~400,000" min="0" max="400000" />
+                      <input type="number" id="deposit2023" class="form-control" placeholder="0~40" min="0" max="40" />
                     </td>
                     <td>71%</td>
                   </tr>
                   <tr>
                     <th scope="row">2024</th>
                     <td>
-                      <input type="number" id="deposit2024" class="form-control" placeholder="0~400,000" min="0" max="400000" />
+                      <input type="number" id="deposit2024" class="form-control" placeholder="0~40" min="0" max="40" />
                     </td>
                     <td>100%</td>
                   </tr>
                   <tr>
                     <th scope="row">2025 이후</th>
                     <td>
-                      <input type="number" id="deposit2025" class="form-control" placeholder="0~550,000" min="0" max="550000" />
+                      <input type="number" id="deposit2025" class="form-control" placeholder="0~55" min="0" max="55" />
                     </td>
                     <td>100%</td>
                   </tr>
@@ -244,7 +245,7 @@
               </table>
             </div>
             <div class="mt-2 small text-muted">
-              <i class="fas fa-info-circle me-1"></i> 매칭 비율은 정부에서 지원하는 보조금 비율입니다.
+              <i class="fas fa-info-circle me-1"></i> 매칭 비율은 정부에서 지원하는 보조금 비율입니다. 최대 한도는 2024년까지 40만원, 2025년부터 55만원입니다.
             </div>
           </div>
 
