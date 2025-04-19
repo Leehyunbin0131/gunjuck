@@ -485,7 +485,7 @@
                   <div class="result-value">${this.formatCurrency(results.totalMatched)} 원</div>
                 </li>
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>원금에 대한 5% 이자</div>
+                  <div>연 5% 이자</div>
                   <div class="result-value">${this.formatCurrency(results.interest)} 원</div>
                 </li>
                 <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
