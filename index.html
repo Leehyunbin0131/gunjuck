@@ -13,14 +13,46 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <!-- Chart.js -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.css" rel="stylesheet">
+  <!-- Korean Army Font -->
+  <link href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.1/ROKABold.woff" rel="stylesheet">
   <!-- Custom CSS -->
   <style>
+    /* 군대 테마 색상 */
     :root {
-      --primary-color: #3b71ca;
-      --secondary-color: #9fa6b2;
-      --accent-color: #14a44d;
-      --light-bg: #f5f8fa;
+      --army-primary: #4B5320;     /* 육군 녹색 */
+      --navy-primary: #003A70;     /* 해군 남색 */
+      --airforce-primary: #00205B; /* 공군 청색 */
+      --marine-primary: #8B0000;   /* 해병대 적색 */
+      
+      --military-light: #F4F5F0;   /* 밝은 군복색 */
+      --military-dark: #2C3539;    /* 어두운 군복색 */
+      --accent-color: #FFD700;     /* 금색(계급장) */
+      
       --border-radius: 0.5rem;
+      --primary-color: var(--army-primary);
+      --secondary-color: #9fa6b2;
+      --light-bg: #f5f8fa;
+    }
+
+    /* 군종 선택에 따른 테마 적용 */
+    body.theme-army {
+      --primary-color: var(--army-primary);
+      --theme-gradient: linear-gradient(135deg, #4B5320, #5D6D2D);
+    }
+
+    body.theme-navy {
+      --primary-color: var(--navy-primary);
+      --theme-gradient: linear-gradient(135deg, #003A70, #005694);
+    }
+
+    body.theme-airforce {
+      --primary-color: var(--airforce-primary);
+      --theme-gradient: linear-gradient(135deg, #00205B, #005087);
+    }
+
+    body.theme-marine {
+      --primary-color: var(--marine-primary);
+      --theme-gradient: linear-gradient(135deg, #8B0000, #A52A2A);
     }
     
     body {
@@ -28,13 +60,53 @@
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
     }
     
+    .military-title {
+      font-family: 'ROKABold', sans-serif;
+      font-weight: bold;
+    }
+    
     .page-header {
-      background: linear-gradient(135deg, var(--primary-color), #1266f1);
+      background: var(--theme-gradient, linear-gradient(135deg, #4B5320, #5D6D2D));
       color: white;
       padding: 2rem 0;
       margin-bottom: 2rem;
       border-radius: 0 0 var(--border-radius) var(--border-radius);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .page-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><path fill="white" fill-opacity="0.05" d="M30 0L60 30L30 60L0 30z"/></svg>');
+      background-repeat: repeat;
+      background-position: center;
+    }
+    
+    .military-badge {
+      display: inline-block;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 0.5rem;
+    }
+    
+    .rank-decoration {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      background-color: var(--accent-color);
+      clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+      margin-right: 5px;
     }
     
     .card {
@@ -42,6 +114,11 @@
       border-radius: var(--border-radius);
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      overflow: hidden;
+    }
+    
+    .military-card {
+      border-top: 3px solid var(--primary-color);
     }
     
     .card:hover {
@@ -64,10 +141,10 @@
     }
     
     .btn-primary:hover {
-      background-color: #2a5298;
-      border-color: #2a5298;
+      background-color: var(--primary-color);
+      filter: brightness(120%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(59, 113, 202, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
     .info-icon {
@@ -114,6 +191,33 @@
       max-height: 300px;
     }
     
+    /* 서비스 진행 바 */
+    .service-progress {
+      height: 10px;
+      border-radius: 5px;
+      background-color: #eee;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .service-progress-bar {
+      height: 100%;
+      background: var(--theme-gradient, linear-gradient(135deg, #4B5320, #5D6D2D));
+      border-radius: 5px;
+      transition: width 1s ease-in-out;
+    }
+    
+    .animated-value {
+      transition: all 0.5s ease-out;
+    }
+    
+    .card-header {
+      background-color: rgba(75, 83, 32, 0.05);
+      font-weight: 600;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(75, 83, 32, 0.1);
+    }
+    
     @media (max-width: 768px) {
       .card {
         margin-bottom: 1.5rem;
@@ -123,7 +227,7 @@
     footer {
       margin-top: 5rem;
       padding: 2rem 0;
-      background-color: #212529;
+      background-color: var(--military-dark);
       color: white;
     }
     
@@ -145,19 +249,77 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    
+    /* 다크 모드 */
+    .dark-mode-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background-color: var(--military-dark);
+      color: white;
+      border: none;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .dark-mode-toggle:hover {
+      transform: scale(1.1);
+    }
+    
+    body.dark-mode {
+      background-color: var(--military-dark);
+      color: #f0f0f0;
+    }
+    
+    body.dark-mode .card {
+      background-color: #343a40;
+      color: #f0f0f0;
+    }
+    
+    body.dark-mode .card-header {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    body.dark-mode .form-control, 
+    body.dark-mode .form-select {
+      background-color: #2c3136;
+      border-color: #495057;
+      color: #f0f0f0;
+    }
+    
+    /* 애니메이션 */
+    .military-animation {
+      animation: salute 0.5s ease-out;
+    }
+    
+    @keyframes salute {
+      0% { transform: rotateZ(0deg); }
+      25% { transform: rotateZ(-10deg); }
+      100% { transform: rotateZ(0deg); }
+    }
   </style>
 </head>
-<body>
+<body class="theme-army">
   <!-- 헤더 영역 -->
   <header class="page-header">
     <div class="container">
       <div class="row align-items-center">
         <div class="col-md-8">
-          <h1 class="fw-bold">장병내일준비적금 계산기</h1>
+          <h1 class="fw-bold military-title">장병내일준비적금 계산기</h1>
           <p class="lead mb-0">군 복무 중 받을 수 있는 적금 혜택을 정확히 계산해보세요</p>
+          <div class="d-flex mt-2">
+            <span class="military-badge">연 5% 이자</span>
+            <span class="military-badge">매칭지원금</span>
+            <span class="military-badge">비과세혜택</span>
+          </div>
         </div>
         <div class="col-md-4 text-md-end d-none d-md-block">
-          <i class="fas fa-calculator fa-4x text-white-50"></i>
+          <img src="https://cdn-icons-png.flaticon.com/512/4766/4766972.png" class="img-fluid" style="max-height: 100px;" alt="군인 아이콘">
         </div>
       </div>
     </div>
@@ -169,36 +331,44 @@
       <div class="col-lg-5 mb-4">
         <form id="calculatorForm">
           <!-- 기본 정보 카드 -->
-          <div class="card p-4 mb-4">
-            <h5 class="card-title mb-3 d-flex align-items-center">
-              <i class="fas fa-info-circle me-2 text-primary"></i>기본 정보 입력
-            </h5>
+          <div class="card p-4 mb-4 military-card">
+            <div class="card-header mb-3 d-flex align-items-center">
+              <span class="rank-decoration"></span>
+              <h5 class="card-title mb-0">기본 정보 입력</h5>
+            </div>
             <div class="row g-3">
               <div class="col-md-12">
                 <label for="startDate" class="form-label">입대일 <i class="fas fa-question-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="귀하의 실제 입대일을 선택해주세요"></i></label>
-                <input type="date" id="startDate" class="form-control" required />
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  <input type="date" id="startDate" class="form-control" required />
+                </div>
                 <div class="invalid-feedback">입대일을 선택해주세요.</div>
               </div>
               <div class="col-md-12">
                 <label for="branch" class="form-label">군종 선택 <i class="fas fa-question-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="군종에 따라 복무 기간이 다릅니다"></i></label>
-                <select id="branch" class="form-select" required>
-                  <option value="" selected disabled>군종을 선택하세요</option>
-                  <option value="army">육군 (18개월)</option>
-                  <option value="navy">해군 (20개월)</option>
-                  <option value="airforce">공군 (21개월)</option>
-                  <option value="marine">해병대 (18개월)</option>
-                </select>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-shield-alt"></i></span>
+                  <select id="branch" class="form-select" required>
+                    <option value="" selected disabled>군종을 선택하세요</option>
+                    <option value="army">육군 (18개월)</option>
+                    <option value="navy">해군 (20개월)</option>
+                    <option value="airforce">공군 (21개월)</option>
+                    <option value="marine">해병대 (18개월)</option>
+                  </select>
+                </div>
                 <div class="invalid-feedback">군종을 선택해주세요.</div>
               </div>
             </div>
           </div>
 
           <!-- 연도별 납입액 카드 - 만원 단위로 변경 -->
-          <div class="card p-4 mb-4">
-            <h5 class="card-title mb-3 d-flex align-items-center">
-              <i class="fas fa-coins me-2 text-primary"></i>연도별 월 납입액 설정
-              <span class="badge bg-primary ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="연도별로 최대 납입액과 매칭 비율이 다릅니다">정책 기준</span>
-            </h5>
+          <div class="card p-4 mb-4 military-card">
+            <div class="card-header mb-3 d-flex align-items-center">
+              <span class="rank-decoration"></span>
+              <h5 class="card-title mb-0">연도별 월 납입액 설정</h5>
+              <span class="badge bg-secondary ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="연도별로 최대 납입액과 매칭 비율이 다릅니다">정책 기준</span>
+            </div>
             <p class="small text-muted mb-3">
               입대 시기와 전역 시기에 따라 월 납입액을 다르게 설정할 수 있습니다.
               <strong>※ 만원 단위로 입력하세요. (예: 40만원 → 40)</strong>
@@ -263,10 +433,16 @@
 
       <!-- 오른쪽 영역 (결과 표시) -->
       <div class="col-lg-7">
-        <div id="result" class="card p-4 d-none">
-          <h5 class="card-title mb-3 d-flex align-items-center">
-            <i class="fas fa-chart-line me-2 text-primary"></i>계산 결과
-          </h5>
+        <div id="result" class="card p-4 d-none military-card">
+          <div class="card-header d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <span class="rank-decoration"></span>
+              <h5 class="card-title mb-0">계산 결과</h5>
+            </div>
+            <div>
+              <span class="badge bg-success">연이자 5%</span>
+            </div>
+          </div>
           <div id="resultContent" class="mb-4"></div>
           
           <!-- 차트 영역 -->
@@ -279,7 +455,7 @@
             <div class="accordion-item">
               <h2 class="accordion-header" id="headingOne">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                  월별 예치금 & 수령액 상세
+                  <i class="fas fa-table me-2"></i> 월별 예치금 & 수령액 상세
                 </button>
               </h2>
               <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#additionalInfoAccordion">
@@ -293,9 +469,27 @@
               </div>
             </div>
             <div class="accordion-item">
+              <h2 class="accordion-header" id="headingCalc">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCalc" aria-expanded="false" aria-controls="collapseCalc">
+                  <i class="fas fa-calculator me-2"></i> 이자는 어떻게 계산되나요?
+                </button>
+              </h2>
+              <div id="collapseCalc" class="accordion-collapse collapse" aria-labelledby="headingCalc" data-bs-parent="#additionalInfoAccordion">
+                <div class="accordion-body">
+                  <p>장병내일준비적금의 이자는 <strong>연 5% 단리</strong>로 계산됩니다. 매월 납입하는 금액에 대해 적금에 있는 기간에 비례해 이자가 계산됩니다.</p>
+                  <p class="mb-0">예를 들어:</p>
+                  <ul>
+                    <li>첫 달 납입액: 40만원 × 5% × (18개월÷12개월) = 3만원 이자</li>
+                    <li>마지막 달 납입액: 40만원 × 5% × (1개월÷12개월) = 1,667원 이자</li>
+                  </ul>
+                  <p class="small text-muted">※ 실제 이자율은 은행 상품에 따라 다를 수 있습니다</p>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
               <h2 class="accordion-header" id="headingTwo">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  장병내일준비적금 안내
+                  <i class="fas fa-info-circle me-2"></i> 장병내일준비적금 안내
                 </button>
               </h2>
               <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#additionalInfoAccordion">
@@ -344,10 +538,12 @@
     <!-- 주의사항 및 FAQ -->
     <div class="row mt-5">
       <div class="col-md-6 mb-4">
-        <div class="card p-4 h-100">
-          <h5 class="card-title mb-3">
-            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>주의사항
-          </h5>
+        <div class="card p-4 h-100 military-card">
+          <div class="card-header mb-3">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-exclamation-triangle me-2 text-warning"></i>주의사항
+            </h5>
+          </div>
           <ul class="list-group list-group-flush">
             <li class="list-group-item border-0 ps-0">실제 납입액과 수령액은 은행별 상품 조건에 따라 다를 수 있습니다.</li>
             <li class="list-group-item border-0 ps-0">이자율은 연5%로 가정하였으며, 실제 이자율은 은행 상품에 따라 다를 수 있습니다.</li>
@@ -357,10 +553,12 @@
         </div>
       </div>
       <div class="col-md-6 mb-4">
-        <div class="card p-4 h-100">
-          <h5 class="card-title mb-3">
-            <i class="fas fa-question-circle me-2 text-primary"></i>자주 묻는 질문
-          </h5>
+        <div class="card p-4 h-100 military-card">
+          <div class="card-header mb-3">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-question-circle me-2 text-primary"></i>자주 묻는 질문
+            </h5>
+          </div>
           <div class="accordion" id="faqAccordion">
             <div class="accordion-item border-0">
               <h2 class="accordion-header" id="faqOne">
@@ -409,7 +607,7 @@
     <div class="container">
       <div class="row">
         <div class="col-md-6 text-md-start">
-          <h5>장병내일준비적금 계산기</h5>
+          <h5 class="military-title">장병내일준비적금 계산기</h5>
           <p class="small">
             이 사이트는 군 복무 중인 장병들의 적금 계획을 돕기 위한 계산기입니다.<br>
             정확한 정보는 각 은행의 공식 안내를 참고하세요.
@@ -460,6 +658,11 @@
       </div>
     </div>
   </div>
+
+  <!-- 다크 모드 토글 -->
+  <button class="dark-mode-toggle" id="darkModeToggle">
+    <i class="fas fa-moon"></i>
+  </button>
 
   <!-- 스크립트 -->
   <!-- Bootstrap 5 JS -->
