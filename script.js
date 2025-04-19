@@ -91,7 +91,7 @@
     },
     
     /**
-     * 저축액 계산 실행 - 전역월까지 포함하도록 수정
+     * 저축액 계산 실행 - 연이자 5% 정확히 계산하도록 수정
      * @returns {Object} 계산 결과
      */
     calculate() {
@@ -131,8 +131,10 @@
         // 현재 날짜 (매월 반복 계산용)
         let currentDate = new Date(startDate);
         
+        // 월별 적금 정보를 저장할 배열
+        const monthlyDeposits = [];
+        
         // 매월 반복하며 납입액, 매칭액 계산 (전역월 포함)
-        // <= 로 변경하여 전역월까지 포함하도록 수정
         while (currentDate <= endDate) {
           const currentYear = currentDate.getFullYear();
           const currentMonth = currentDate.getMonth() + 1; // 0부터 시작하므로 +1
@@ -154,6 +156,13 @@
           results.totalDeposit += thisMonthDeposit;
           results.totalMatched += thisMonthMatch;
           
+          // 월별 적금 정보 저장 (이자 계산에 사용)
+          monthlyDeposits.push({
+            date: new Date(currentDate),
+            deposit: thisMonthDeposit,
+            match: thisMonthMatch
+          });
+          
           // 월별 상세 정보 저장
           results.monthlyDetails.push({
             date: new Date(currentDate),
@@ -168,8 +177,26 @@
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
         
-        // 이자 계산 (원금에 대해 5% 단리)
-        results.interest = results.totalDeposit * this.constants.interestRate;
+        // 연이자 계산 (각 납입액마다 가입기간에 따른 이자 계산)
+        let totalInterest = 0;
+        const annualRate = this.constants.interestRate; // 연이자율 (ex: 0.05 = 5%)
+        
+        monthlyDeposits.forEach((monthDeposit, index) => {
+          // 해당 납입액이 적금에 있는 기간(년) 계산
+          // index = 0이면 첫번째 달 (예: 10개월 납입 시 마지막 달까지 10개월)
+          // index = 9면 마지막 달 (예: 10개월 납입 시 마지막 달까지 1개월)
+          const remainingMonths = monthlyDeposits.length - index;
+          const years = remainingMonths / 12; // 년 단위로 변환
+          
+          // 원금에 대한 연이자 계산 (원금 * 연이자율 * 기간(년))
+          const depositInterest = monthDeposit.deposit * annualRate * years;
+          
+          // 이자 합산 (매칭금에는 이자가 붙지 않는다고 가정)
+          totalInterest += depositInterest;
+        });
+        
+        // 합산된 이자를 결과에 저장
+        results.interest = totalInterest;
         
         // 최종 합계
         results.finalTotal = results.totalDeposit + results.totalMatched + results.interest;
@@ -190,7 +217,7 @@
           monthlyDetails: []
         };
       }
-    },
+    }
     
     /**
      * 해당 연도에 대한 사용자 입력 납입액 조회
