@@ -3,118 +3,469 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="이 사이트는 장병내일준비적금 계산기를 제공합니다.">
-  <meta name="keywords" content="장병내일준비적금, 군인적금, GitHub Pages, 군적금, 계산기, 적금">
+  <meta name="description" content="장병내일준비적금 계산기 - 군 복무 중 혜택받는 적금 계산">
+  <meta name="keywords" content="장병내일준비적금, 군인적금, 군적금, 계산기, 군 저축, 매칭지원금">
   <meta name="author" content="Leehyunbin0131">
-  <title>장병내일준비적금 계산기</title>
+  <title>장병내일준비적금 계산기 | 군복무 저축 혜택 계산</title>
   <!-- Bootstrap 5 CSS -->
-  <link 
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    :root {
+      --primary-color: #3b71ca;
+      --secondary-color: #9fa6b2;
+      --accent-color: #14a44d;
+      --light-bg: #f5f8fa;
+      --border-radius: 0.5rem;
+    }
+    
+    body {
+      background-color: var(--light-bg);
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+    
+    .page-header {
+      background: linear-gradient(135deg, var(--primary-color), #1266f1);
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card {
+      border: none;
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-control, .form-select {
+      border-radius: var(--border-radius);
+      padding: 0.6rem 1rem;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      border-radius: var(--border-radius);
+      padding: 0.7rem 2rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+      background-color: #2a5298;
+      border-color: #2a5298;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 113, 202, 0.3);
+    }
+    
+    .info-icon {
+      color: var(--secondary-color);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .info-icon:hover {
+      color: var(--primary-color);
+    }
+    
+    .result-value {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+    
+    .total-amount {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .tooltip-inner {
+      max-width: 300px;
+      text-align: left;
+    }
+    
+    #resultChart {
+      max-height: 300px;
+    }
+    
+    @media (max-width: 768px) {
+      .card {
+        margin-bottom: 1.5rem;
+      }
+    }
+    
+    footer {
+      margin-top: 5rem;
+      padding: 2rem 0;
+      background-color: #212529;
+      color: white;
+    }
+    
+    footer a {
+      color: #6ea8fe;
+      text-decoration: none;
+    }
+    
+    footer a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-  <div class="container my-5">
-    <h1 class="mb-4 text-center">장병내일준비적금 계산기</h1>
-
-    <!-- 입력 폼 -->
-    <div class="card p-4 mb-4">
-      <h5 class="card-title mb-3">기본 정보 입력</h5>
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label for="startDate" class="form-label">입대일(YYYY-MM-DD)</label>
-          <input type="date" id="startDate" class="form-control" />
+  <!-- 헤더 영역 -->
+  <header class="page-header">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="fw-bold">장병내일준비적금 계산기</h1>
+          <p class="lead mb-0">군 복무 중 받을 수 있는 적금 혜택을 정확히 계산해보세요</p>
         </div>
-        <div class="col-md-6">
-          <label for="branch" class="form-label">군종 선택</label>
-          <select id="branch" class="form-select">
-            <option value="army">육군 (18개월)</option>
-            <option value="navy">해군 (20개월)</option>
-            <option value="airforce">공군 (21개월)</option>
-          </select>
+        <div class="col-md-4 text-md-end d-none d-md-block">
+          <i class="fas fa-calculator fa-4x text-white-50"></i>
         </div>
       </div>
     </div>
+  </header>
 
-    <!-- 연도별 납입액 입력 -->
-    <div class="card p-4 mb-4">
-      <h5 class="card-title mb-3">연도별 월 납입액 설정</h5>
-      <p class="small text-muted">
-        예) 2023년, 2024년까지 40만원, 2025년부터 55만원 등 원하는 금액을 입력하세요.
-      </p>
-      <div class="table-responsive">
-        <table class="table table-bordered align-middle text-center">
-          <thead class="table-secondary">
-            <tr>
-              <th scope="col">연도</th>
-              <th scope="col">월 납입액(원)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">2022</th>
-              <td>
-                <input type="number" id="deposit2022" class="form-control" placeholder="예: 400000" />
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">2023</th>
-              <td>
-                <input type="number" id="deposit2023" class="form-control" placeholder="예: 400000" />
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">2024</th>
-              <td>
-                <input type="number" id="deposit2024" class="form-control" placeholder="예: 400000" />
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">2025 이후</th>
-              <td>
-                <input type="number" id="deposit2025" class="form-control" placeholder="예: 550000" />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <div class="container">
+    <div class="row">
+      <!-- 왼쪽 영역 (입력 폼) -->
+      <div class="col-lg-5 mb-4">
+        <form id="calculatorForm">
+          <!-- 기본 정보 카드 -->
+          <div class="card p-4 mb-4">
+            <h5 class="card-title mb-3 d-flex align-items-center">
+              <i class="fas fa-info-circle me-2 text-primary"></i>기본 정보 입력
+            </h5>
+            <div class="row g-3">
+              <div class="col-md-12">
+                <label for="startDate" class="form-label">입대일 <i class="fas fa-question-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="귀하의 실제 입대일을 선택해주세요"></i></label>
+                <input type="date" id="startDate" class="form-control" required />
+                <div class="invalid-feedback">입대일을 선택해주세요.</div>
+              </div>
+              <div class="col-md-12">
+                <label for="branch" class="form-label">군종 선택 <i class="fas fa-question-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="군종에 따라 복무 기간이 다릅니다"></i></label>
+                <select id="branch" class="form-select" required>
+                  <option value="" selected disabled>군종을 선택하세요</option>
+                  <option value="army">육군 (18개월)</option>
+                  <option value="navy">해군 (20개월)</option>
+                  <option value="airforce">공군 (21개월)</option>
+                  <option value="marine">해병대 (18개월)</option>
+                </select>
+                <div class="invalid-feedback">군종을 선택해주세요.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 연도별 납입액 카드 -->
+          <div class="card p-4 mb-4">
+            <h5 class="card-title mb-3 d-flex align-items-center">
+              <i class="fas fa-coins me-2 text-primary"></i>연도별 월 납입액 설정
+              <span class="badge bg-primary ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="연도별로 최대 납입액과 매칭 비율이 다릅니다">정책 기준</span>
+            </h5>
+            <p class="small text-muted mb-3">
+              입대 시기와 전역 시기에 따라 월 납입액을 다르게 설정할 수 있습니다.
+            </p>
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">연도</th>
+                    <th scope="col">월 납입액(원)</th>
+                    <th scope="col">매칭 비율</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">2022</th>
+                    <td>
+                      <input type="number" id="deposit2022" class="form-control" placeholder="0~400,000" min="0" max="400000" />
+                    </td>
+                    <td>33%</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">2023</th>
+                    <td>
+                      <input type="number" id="deposit2023" class="form-control" placeholder="0~400,000" min="0" max="400000" />
+                    </td>
+                    <td>71%</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">2024</th>
+                    <td>
+                      <input type="number" id="deposit2024" class="form-control" placeholder="0~400,000" min="0" max="400000" />
+                    </td>
+                    <td>100%</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">2025 이후</th>
+                    <td>
+                      <input type="number" id="deposit2025" class="form-control" placeholder="0~550,000" min="0" max="550000" />
+                    </td>
+                    <td>100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-2 small text-muted">
+              <i class="fas fa-info-circle me-1"></i> 매칭 비율은 정부에서 지원하는 보조금 비율입니다.
+            </div>
+          </div>
+
+          <!-- 계산하기 버튼 -->
+          <div class="d-grid gap-2 mb-4">
+            <button type="submit" class="btn btn-primary btn-lg" id="calculateBtn">
+              <i class="fas fa-calculator me-2"></i>계산하기
+            </button>
+            <button type="reset" class="btn btn-outline-secondary" id="resetBtn">
+              <i class="fas fa-redo me-2"></i>초기화
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 오른쪽 영역 (결과 표시) -->
+      <div class="col-lg-7">
+        <div id="result" class="card p-4 d-none">
+          <h5 class="card-title mb-3 d-flex align-items-center">
+            <i class="fas fa-chart-line me-2 text-primary"></i>계산 결과
+          </h5>
+          <div id="resultContent" class="mb-4"></div>
+          
+          <!-- 차트 영역 -->
+          <div class="chart-container mb-3">
+            <canvas id="resultChart"></canvas>
+          </div>
+          
+          <!-- 상세 정보 아코디언 -->
+          <div class="accordion" id="additionalInfoAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                  월별 예치금 & 수령액 상세
+                </button>
+              </h2>
+              <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#additionalInfoAccordion">
+                <div class="accordion-body" id="monthlyDetails">
+                  <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">로딩중...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  장병내일준비적금 안내
+                </button>
+              </h2>
+              <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#additionalInfoAccordion">
+                <div class="accordion-body">
+                  <h6 class="fw-bold">장병내일준비적금이란?</h6>
+                  <p>장병내일준비적금은 국방부, 은행연합회, 병무청이 함께하는 군 복무 청년을 위한 금융지원 제도입니다.</p>
+                  
+                  <h6 class="fw-bold">주요 혜택</h6>
+                  <ul>
+                    <li>정부 매칭지원금 (최대 100%)</li>
+                    <li>시중은행 금리 및 우대금리</li>
+                    <li>이자소득세 비과세</li>
+                  </ul>
+                  
+                  <h6 class="fw-bold">가입 대상</h6>
+                  <p>현역병, 상근예비역, 사회복무요원 등 병역의무이행자</p>
+                  
+                  <h6 class="fw-bold">가입 방법</h6>
+                  <p>민영은행 및 인터넷뱅킹을 통한 가입 가능 (KB국민, 신한, 우리, 하나, IBK, NH농협 등)</p>
+                  
+                  <div class="alert alert-info mt-3">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    본 계산기는 참고용이며, 실제 수령액은 은행별 금리에 따라 달라질 수 있습니다.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 공유 버튼 -->
+          <div class="d-flex justify-content-end mt-3">
+            <button class="btn btn-outline-primary me-2" id="printBtn">
+              <i class="fas fa-print me-1"></i> 인쇄
+            </button>
+            <button class="btn btn-outline-primary me-2" id="saveBtn">
+              <i class="fas fa-save me-1"></i> 저장
+            </button>
+            <button class="btn btn-outline-primary" id="shareBtn">
+              <i class="fas fa-share-alt me-1"></i> 공유
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- 계산하기 버튼 -->
-    <div class="text-center mb-4">
-      <button 
-        class="btn btn-primary btn-lg px-5" 
-        onclick="calculate()"
-      >
-        계산하기
-      </button>
-    </div>
-
-    <!-- 결과 표시 카드 -->
-    <div id="result" class="card p-4 d-none">
-      <h5 class="card-title mb-3">계산 결과</h5>
-      <div id="resultContent"></div>
+    
+    <!-- 주의사항 및 FAQ -->
+    <div class="row mt-5">
+      <div class="col-md-6 mb-4">
+        <div class="card p-4 h-100">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>주의사항
+          </h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item border-0 ps-0">실제 납입액과 수령액은 은행별 상품 조건에 따라 다를 수 있습니다.</li>
+            <li class="list-group-item border-0 ps-0">이자율은 5%로 가정하였으며, 실제 이자율은 은행 상품에 따라 다를 수 있습니다.</li>
+            <li class="list-group-item border-0 ps-0">매칭 지원금은 정부 정책에 따라 변경될 수 있습니다.</li>
+            <li class="list-group-item border-0 ps-0">계산 결과는 참고용이며, 정확한 정보는 해당 은행에 문의하시기 바랍니다.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="card p-4 h-100">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-question-circle me-2 text-primary"></i>자주 묻는 질문
+          </h5>
+          <div class="accordion" id="faqAccordion">
+            <div class="accordion-item border-0">
+              <h2 class="accordion-header" id="faqOne">
+                <button class="accordion-button collapsed p-0 bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseOne" aria-expanded="false">
+                  가입 가능한 은행은 어디인가요?
+                </button>
+              </h2>
+              <div id="faqCollapseOne" class="accordion-collapse collapse" aria-labelledby="faqOne" data-bs-parent="#faqAccordion">
+                <div class="accordion-body ps-0">
+                  KB국민, 신한, 우리, 하나, IBK기업, NH농협, 수협, 대구, 부산, 광주, 전북, 경남, 제주, SC제일, 씨티, 케이뱅크, 카카오뱅크 등 대부분의 은행에서 가입 가능합니다.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item border-0">
+              <h2 class="accordion-header" id="faqTwo">
+                <button class="accordion-button collapsed p-0 bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseTwo" aria-expanded="false">
+                  중도해지 시 불이익이 있나요?
+                </button>
+              </h2>
+              <div id="faqCollapseTwo" class="accordion-collapse collapse" aria-labelledby="faqTwo" data-bs-parent="#faqAccordion">
+                <div class="accordion-body ps-0">
+                  전역 전 중도해지 시 정부지원금을 받을 수 없으며, 은행별 중도해지 이율이 적용됩니다. 단, 불가피한 사유(의병전역 등)의 경우 정부지원금을 받을 수 있습니다.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item border-0">
+              <h2 class="accordion-header" id="faqThree">
+                <button class="accordion-button collapsed p-0 bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseThree" aria-expanded="false">
+                  매월 다른 금액을 납입할 수 있나요?
+                </button>
+              </h2>
+              <div id="faqCollapseThree" class="accordion-collapse collapse" aria-labelledby="faqThree" data-bs-parent="#faqAccordion">
+                <div class="accordion-body ps-0">
+                  예, 매월 다른 금액을 납입할 수 있습니다. 다만, 이 계산기에서는 연도별 평균 납입액을 기준으로 계산합니다.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 하단 영역 -->
-  <footer class="text-center py-4 mt-5 bg-light">
-    <p class="mb-1">제작자: <strong>Leehyunbin</strong></p>
-    <p class="mb-1">
-      <a href="https://github.com/Leehyunbin0131" target="_blank" rel="noopener noreferrer">
-        GitHub 바로가기
-      </a>
-    </p>
-    <p class="mb-0">
-      &copy; 2025 <strong>Leehyunbin</strong>. All rights reserved.
-    </p>
+  <!-- 푸터 영역 -->
+  <footer class="text-center">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-md-start">
+          <h5>장병내일준비적금 계산기</h5>
+          <p class="small">
+            이 사이트는 군 복무 중인 장병들의 적금 계획을 돕기 위한 계산기입니다.<br>
+            정확한 정보는 각 은행의 공식 안내를 참고하세요.
+          </p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p>제작자: <strong>Leehyunbin</strong></p>
+          <p>
+            <a href="https://github.com/Leehyunbin0131" target="_blank" rel="noopener noreferrer">
+              <i class="fab fa-github me-1"></i>GitHub
+            </a>
+          </p>
+          <p>&copy; 2025 <strong>Leehyunbin</strong>. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
   </footer>
 
-  <!-- Bootstrap 5 JS (옵션: 팝오버, 토스트 등 필요 시) -->
-  <script 
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-  ></script>
-  <!-- 계산 로직 -->
-  <script src="script.js"></script>
+  <!-- 모달 -->
+  <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="shareModalLabel">계산 결과 공유</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>아래 링크를 복사하여 계산 결과를 공유하세요:</p>
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" id="shareLink" readonly>
+            <button class="btn btn-outline-primary" type="button" id="copyLinkBtn">복사</button>
+          </div>
+          <div class="d-flex justify-content-center mt-3">
+            <button class="btn btn-outline-primary mx-1" id="shareKakao">
+              <i class="fab fa-kickstarter me-1"></i> 카카오톡
+            </button>
+            <button class="btn btn-outline-primary mx-1">
+              <i class="fab fa-twitter me-1"></i> 트위터
+            </button>
+            <button class="btn btn-outline-primary mx-1">
+              <i class="fas fa-envelope me-1"></i> 이메일
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 스크립트 -->
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <!-- Custom JS -->
+  <script src="app.js"></script>
 </body>
 </html>
