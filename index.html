@@ -3,9 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="장병내일준비적금 계산기 - 군 복무 중 혜택받는 적금 계산">
-  <meta name="keywords" content="장병내일준비적금, 군인적금, 군적금, 계산기, 군 저축, 매칭지원금">
-  <meta name="author" content="Leehyunbin0131">
+  
+  <!-- 표준 URL 지정 (중복 콘텐츠 방지) -->
+  <link rel="canonical" href="https://leehyunbin0131.github.io/gunjuck/">
+  
+  <!-- 소셜 미디어 메타태그 -->
+  <meta property="og:title" content="장병내일준비적금 계산기 | 군복무 저축 혜택 계산">
+  <meta property="og:description" content="군 복무 중 받을 수 있는 적금 혜택을 정확히 계산해보세요. 연 5% 이자 및 매칭지원금 포함.">
+  <meta property="og:image" content="https://leehyunbin0131.github.io/gunjuck/preview-image.jpg">
+  <meta property="og:url" content="https://leehyunbin0131.github.io/gunjuck/">
+  <meta property="og:type" content="website">
+  
+  <!-- 추가 키워드 및 설명 확장 -->
+  <meta name="description" content="장병내일준비적금 계산기 - 군 복무 중 혜택받는 적금 계산. 연 5% 이자, 매칭지원금 최대 100%, 비과세 혜택까지 정확히 계산해보세요.">
+  <meta name="keywords" content="장병내일준비적금, 군인적금, 군적금, 계산기, 군 저축, 매칭지원금, 육군적금, 해군적금, 공군적금, 해병대적금, 군복무혜택, 2025년군적금">
+  
   <title>장병내일준비적금 계산기 | 군복무 저축 혜택 계산</title>
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -664,6 +676,28 @@
     <i class="fas fa-moon"></i>
   </button>
 
+  <!-- 구조화된 데이터 마크업 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "장병내일준비적금 계산기",
+    "description": "군 복무 중 받을 수 있는 적금 혜택을 정확히 계산해주는 웹 애플리케이션",
+    "url": "https://leehyunbin0131.github.io/gunjuck/",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "All",
+    "author": {
+      "@type": "Person",
+      "name": "Leehyunbin"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "KRW"
+    }
+  }
+  </script>
+
   <!-- 스크립트 -->
   <!-- Bootstrap 5 JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -671,5 +705,64 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <!-- Custom JS -->
   <script src="script.js"></script>
+  
+  <!-- 수정된 직접 기능 스크립트 -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 다크모드 토글 기능
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+      darkModeToggle.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        
+        // 아이콘 변경
+        if (document.body.classList.contains('dark-mode')) {
+          this.innerHTML = '<i class="fas fa-sun"></i>';
+        } else {
+          this.innerHTML = '<i class="fas fa-moon"></i>';
+        }
+        
+        // 설정 저장
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+      });
+      
+      // 저장된 다크모드 설정 불러오기
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      }
+    }
+    
+    // 군종 테마 변경 기능
+    const branchSelect = document.getElementById('branch');
+    if (branchSelect) {
+      branchSelect.addEventListener('change', function() {
+        // 기존 테마 클래스 제거
+        document.body.classList.remove('theme-army', 'theme-navy', 'theme-airforce', 'theme-marine');
+        
+        // 선택한 군대에 따른 테마 적용
+        switch(this.value) {
+          case 'navy':
+            document.body.classList.add('theme-navy');
+            break;
+          case 'airforce':
+            document.body.classList.add('theme-airforce');
+            break;
+          case 'marine':
+            document.body.classList.add('theme-marine');
+            break;
+          default:
+            document.body.classList.add('theme-army');
+        }
+      });
+    }
+    
+    // 부트스트랩 툴팁 초기화
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+  </script>
 </body>
 </html>
