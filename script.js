@@ -293,6 +293,42 @@
         console.error('공유 URL 생성 오류: ', error);
         return window.location.href;
       }
+    },
+    
+    /**
+     * 복무 진행 상황 계산
+     * @returns {Number} 진행률 (0-100%)
+     */
+    calculateServiceProgress() {
+      try {
+        const startDate = new Date(this.data.startDate);
+        const totalMonths = this.constants.serviceMonths[this.data.branch];
+        
+        const endDate = new Date(startDate);
+        endDate.setMonth(endDate.getMonth() + totalMonths);
+        
+        const today = new Date();
+        
+        // 아직 입대 전인 경우
+        if (today < startDate) {
+          return 0;
+        }
+        
+        // 이미 전역한 경우
+        if (today > endDate) {
+          return 100;
+        }
+        
+        // 복무 중인 경우 - 진행률 계산
+        const totalDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+        const daysServed = (today - startDate) / (1000 * 60 * 60 * 24);
+        const progressPercent = (daysServed / totalDays) * 100;
+        
+        return Math.min(100, Math.max(0, progressPercent));
+      } catch (error) {
+        console.error('복무 진행 상황 계산 오류: ', error);
+        return 0;
+      }
     }
   };
 
@@ -328,7 +364,8 @@
           saveBtn: document.getElementById('saveBtn'),
           printBtn: document.getElementById('printBtn'),
           shareLink: document.getElementById('shareLink'),
-          copyLinkBtn: document.getElementById('copyLinkBtn')
+          copyLinkBtn: document.getElementById('copyLinkBtn'),
+          darkModeToggle: document.getElementById('darkModeToggle')
         };
         
         // 부트스트랩 모달 초기화 (DOM 로드 후)
@@ -388,6 +425,9 @@
         this.elements.deposit2023.value = data.inputs.deposits[2023] ? (data.inputs.deposits[2023] / 10000) : '';
         this.elements.deposit2024.value = data.inputs.deposits[2024] ? (data.inputs.deposits[2024] / 10000) : '';
         this.elements.deposit2025.value = data.inputs.deposits[2025] ? (data.inputs.deposits[2025] / 10000) : '';
+        
+        // 군종에 따른 테마 적용
+        this.applyMilitaryTheme(data.inputs.branch);
       } catch (error) {
         console.error('저장 데이터로 폼 채우기 오류: ', error);
       }
@@ -406,6 +446,8 @@
         
         if (params.has('branch')) {
           this.elements.branch.value = params.get('branch');
+          // 군종에 따른 테마 적용
+          this.applyMilitaryTheme(params.get('branch'));
         }
         
         // URL 파라미터는 원 단위로 저장되어 있으므로 만원 단위로 변환
@@ -439,6 +481,34 @@
     },
     
     /**
+     * 군종에 따른 테마 적용
+     * @param {String} branch 군종
+     */
+    applyMilitaryTheme(branch) {
+      try {
+        // 기존 테마 클래스 제거
+        document.body.classList.remove('theme-army', 'theme-navy', 'theme-airforce', 'theme-marine');
+        
+        // 선택한 군대에 따른 테마 적용
+        switch(branch) {
+          case 'navy':
+            document.body.classList.add('theme-navy');
+            break;
+          case 'airforce':
+            document.body.classList.add('theme-airforce');
+            break;
+          case 'marine':
+            document.body.classList.add('theme-marine');
+            break;
+          default:
+            document.body.classList.add('theme-army');
+        }
+      } catch (error) {
+        console.error('군종 테마 적용 오류: ', error);
+      }
+    },
+    
+    /**
      * 계산 결과 화면에 표시
      * @param {Object} results 계산 결과
      */
@@ -451,6 +521,17 @@
         // 스크롤 이동 (모바일에서 필요)
         if (window.innerWidth < 992) {
           this.elements.result.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 복무 진행 상황 계산
+        const progressPercent = CalculatorModel.calculateServiceProgress();
+        let progressText = "";
+        if (progressPercent === 0) {
+          progressText = "입대 예정";
+        } else if (progressPercent === 100) {
+          progressText = "전역 완료";
+        } else {
+          progressText = `복무 중 (${progressPercent.toFixed(1)}% 진행)`;
         }
         
         // 결과 내용 채우기
@@ -467,41 +548,69 @@
                 ${this.calculateEndDate(CalculatorModel.data.startDate, results.totalMonths).toLocaleDateString()}
               </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center mb-2">
               <div>총 복무 기간</div>
               <div class="fw-medium">${results.totalMonths}개월</div>
             </div>
+            
+            <div class="mt-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>입대일</span>
+                <span>복무 진행</span>
+                <span>전역일</span>
+              </div>
+              <div class="service-progress">
+                <div class="service-progress-bar" style="width: ${progressPercent}%;"></div>
+              </div>
+              <div class="text-center mt-1">
+                <span class="badge bg-secondary">${progressText}</span>
+              </div>
+            </div>
           </div>
           
-          <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-body p-0">
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>내가 납입한 원금</div>
-                  <div class="result-value">${this.formatCurrency(results.totalDeposit)} 원</div>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>정부 매칭 지원금</div>
-                  <div class="result-value">${this.formatCurrency(results.totalMatched)} 원</div>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>연 5% 이자</div>
-                  <div class="result-value">${this.formatCurrency(results.interest)} 원</div>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
-                  <div class="fw-bold">예상 수령액 합계</div>
-                  <div class="total-amount">${this.formatCurrency(results.finalTotal)} 원</div>
-                </li>
-              </ul>
+          <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+              <div class="card bg-light h-100">
+                <div class="card-body text-center">
+                  <h6 class="mb-2">내 납입 원금</h6>
+                  <h4 class="mb-0 animated-value" id="animatedDeposit">${this.formatCurrency(results.totalDeposit)} 원</h4>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="card bg-light h-100">
+                <div class="card-body text-center">
+                  <h6 class="mb-2">매칭 지원금</h6>
+                  <h4 class="mb-0 animated-value" id="animatedMatched">${this.formatCurrency(results.totalMatched)} 원</h4>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="card bg-light h-100">
+                <div class="card-body text-center">
+                  <h6 class="mb-2">연 5% 이자</h6>
+                  <h4 class="mb-0 animated-value" id="animatedInterest">${this.formatCurrency(results.interest)} 원</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card bg-light mb-4">
+            <div class="card-body text-center p-4">
+              <h5 class="mb-2">예상 수령액 합계</h5>
+              <h3 class="text-success mb-0 animated-value military-animation" id="animatedTotal">${this.formatCurrency(results.finalTotal)} 원</h3>
             </div>
           </div>
         `;
         
         // 차트 렌더링
-        this.renderResultChart(results);
+        this.renderPieChart(results);
         
         // 월별 상세 정보 렌더링
         this.renderMonthlyDetails(results.monthlyDetails);
+        
+        // 숫자 애니메이션 적용
+        this.animateNumbers(results);
         
         console.log('결과 표시 완료');
       } catch (error) {
@@ -517,10 +626,48 @@
     },
     
     /**
-     * 결과 차트 렌더링
+     * 결과 금액에 애니메이션 효과 적용
      * @param {Object} results 계산 결과
      */
-    renderResultChart(results) {
+    animateNumbers(results) {
+      try {
+        const animateValue = (elementId, start, end, duration) => {
+          const element = document.getElementById(elementId);
+          if (!element) return;
+          
+          let startTimestamp = null;
+          const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            
+            // 3자리 콤마 형식으로 포맷팅
+            element.textContent = new Intl.NumberFormat('ko-KR').format(
+              Math.floor(progress * (end - start) + start)
+            ) + ' 원';
+            
+            if (progress < 1) {
+              window.requestAnimationFrame(step);
+            }
+          };
+          
+          window.requestAnimationFrame(step);
+        };
+        
+        // 각 금액 요소에 애니메이션 적용
+        animateValue('animatedDeposit', 0, results.totalDeposit, 1000);
+        animateValue('animatedMatched', 0, results.totalMatched, 1000);
+        animateValue('animatedInterest', 0, results.interest, 1000);
+        animateValue('animatedTotal', 0, results.finalTotal, 1500);
+      } catch (error) {
+        console.error('숫자 애니메이션 적용 오류: ', error);
+      }
+    },
+    
+    /**
+     * 결과 차트 렌더링 - 원 그래프로 변경
+     * @param {Object} results 계산 결과
+     */
+    renderPieChart(results) {
       try {
         const ctx = this.elements.resultChart.getContext('2d');
         
@@ -531,29 +678,22 @@
         
         // 차트 데이터 준비
         const chartData = {
-          labels: ['총액 구성'],
-          datasets: [
-            {
-              label: '내 납입금',
-              data: [results.totalDeposit],
-              backgroundColor: 'rgba(59, 113, 202, 0.7)',
-            },
-            {
-              label: '정부 매칭 지원금',
-              data: [results.totalMatched],
-              backgroundColor: 'rgba(20, 164, 77, 0.7)',
-            },
-            {
-              label: '이자',
-              data: [results.interest],
-              backgroundColor: 'rgba(244, 162, 97, 0.7)',
-            }
-          ]
+          labels: ['내 납입금', '정부 매칭 지원금', '이자'],
+          datasets: [{
+            data: [results.totalDeposit, results.totalMatched, results.interest],
+            backgroundColor: [
+              'rgba(59, 113, 202, 0.7)',  // 파란색
+              'rgba(20, 164, 77, 0.7)',   // 녹색
+              'rgba(244, 162, 97, 0.7)',  // 주황색
+            ],
+            borderWidth: 1
+          }]
         };
         
         // 차트 옵션
         const chartOptions = {
-          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             title: {
               display: true,
@@ -569,39 +709,19 @@
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) {
-                    label += ': ';
-                  }
-                  label += new Intl.NumberFormat('ko-KR').format(context.raw) + '원';
-                  return label;
+                  let label = context.label || '';
+                  const value = context.raw;
+                  const percentage = Math.round((value / results.finalTotal) * 100);
+                  return `${label}: ${new Intl.NumberFormat('ko-KR').format(value)}원 (${percentage}%)`;
                 }
               }
-            }
-          },
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              stacked: true,
-              ticks: {
-                callback: function(value) {
-                  return new Intl.NumberFormat('ko-KR', { 
-                    notation: 'compact',
-                    compactDisplay: 'short'
-                  }).format(value) + '원';
-                }
-              }
-            },
-            y: {
-              stacked: true
             }
           }
         };
         
-        // 차트 생성
+        // 차트 생성 (원 그래프)
         this.chart = new Chart(ctx, {
-          type: 'bar',
+          type: 'pie',
           data: chartData,
           options: chartOptions
         });
@@ -713,6 +833,9 @@
           this.chart = null;
         }
         
+        // 테마 기본값으로 초기화
+        this.applyMilitaryTheme('army');
+        
         console.log('폼 초기화 완료');
       } catch (error) {
         console.error('폼 초기화 오류: ', error);
@@ -787,6 +910,29 @@
     },
     
     /**
+     * 다크 모드 토글
+     */
+    toggleDarkMode() {
+      try {
+        document.body.classList.toggle('dark-mode');
+        
+        const darkModeToggle = this.elements.darkModeToggle;
+        if (darkModeToggle) {
+          if (document.body.classList.contains('dark-mode')) {
+            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+          } else {
+            darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+        }
+        
+        // 다크 모드 설정 저장
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+      } catch (error) {
+        console.error('다크 모드 토글 오류: ', error);
+      }
+    },
+    
+    /**
      * 초기 UI 셋업
      */
     init() {
@@ -812,8 +958,20 @@
           this.elements.startDate.value = today.toISOString().split('T')[0];
         }
         
+        // 다크 모드 설정 복원
+        if (localStorage.getItem('darkMode') === 'true') {
+          this.toggleDarkMode();
+        }
+        
         // URL 파라미터로 폼 채우기
         this.fillFormFromUrlParams();
+        
+        // 군종 변경 시 테마 변경 이벤트 리스너
+        if (this.elements.branch) {
+          this.elements.branch.addEventListener('change', (e) => {
+            this.applyMilitaryTheme(e.target.value);
+          });
+        }
         
         console.log('뷰 초기화 완료');
       } catch (error) {
@@ -873,6 +1031,13 @@
         // 링크 복사 버튼 이벤트 핸들러
         if (CalculatorView.elements.copyLinkBtn) {
           CalculatorView.elements.copyLinkBtn.addEventListener('click', this.handleCopyLink.bind(this));
+        }
+        
+        // 다크 모드 토글 이벤트 핸들러
+        if (CalculatorView.elements.darkModeToggle) {
+          CalculatorView.elements.darkModeToggle.addEventListener('click', () => {
+            CalculatorView.toggleDarkMode();
+          });
         }
         
         console.log('컨트롤러 초기화 완료');
