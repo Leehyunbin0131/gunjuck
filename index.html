@@ -672,7 +672,7 @@
   </div>
 
   <!-- 다크 모드 토글 -->
-  <button class="dark-mode-toggle" id="darkModeToggle">
+  <button class="dark-mode-toggle" id="darkModeToggle" onclick="toggleDarkMode()">
     <i class="fas fa-moon"></i>
   </button>
 
@@ -708,29 +708,28 @@
   
   <!-- 수정된 직접 기능 스크립트 -->
   <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // 다크모드 토글 기능
+  // 다크모드 전역 함수 정의
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    
+    // 아이콘 변경
     const darkModeToggle = document.getElementById('darkModeToggle');
-    if (darkModeToggle) {
-      darkModeToggle.addEventListener('click', function() {
-        document.body.classList.toggle('dark-mode');
-        
-        // 아이콘 변경
-        if (document.body.classList.contains('dark-mode')) {
-          this.innerHTML = '<i class="fas fa-sun"></i>';
-        } else {
-          this.innerHTML = '<i class="fas fa-moon"></i>';
-        }
-        
-        // 설정 저장
-        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-      });
-      
-      // 저장된 다크모드 설정 불러오기
-      if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark-mode');
-        darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-      }
+    if (document.body.classList.contains('dark-mode')) {
+      darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    } else {
+      darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+    }
+    
+    // 설정 저장
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+  }
+  
+  // 페이지 로드시 다크모드 설정 적용
+  window.onload = function() {
+    // 저장된 다크모드 설정 불러오기
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('darkModeToggle').innerHTML = '<i class="fas fa-sun"></i>';
     }
     
     // 군종 테마 변경 기능
@@ -757,12 +756,12 @@
       });
     }
     
-    // 부트스트랩 툴팁 초기화
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function(tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-  });
+    // 툴팁 초기화
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  }
   </script>
 </body>
 </html>
