@@ -60,51 +60,137 @@
     },
     
     /**
-     * 입력 데이터 설정 및 검증
-     * @param {Object} inputData 사용자 입력 데이터
-     * @returns {Boolean} 검증 결과
-     */
-    setInputData(inputData) {
-      try {
-        // 필수 입력값 검증
-        if (!inputData.startDate || !inputData.branch) {
-          console.log('필수 입력값 누락: ', inputData);
-          return false;
-        }
-        
-        // 데이터 설정
-        this.data.startDate = new Date(inputData.startDate);
-        this.data.branch = inputData.branch;
-        this.data.deposits = {
-          2022: Number(inputData.deposits[2022]) || 0,
-          2023: Number(inputData.deposits[2023]) || 0,
-          2024: Number(inputData.deposits[2024]) || 0,
-          2025: Number(inputData.deposits[2025]) || 0
-        };
-        
-        console.log('입력 데이터 설정 완료: ', this.data);
-        return true;
-      } catch (error) {
-        console.error('입력 데이터 설정 오류: ', error);
-        return false;
-      }
-    },
+ * 입력 데이터 설정 및 검증 - 만원 단위 입력을 처리하도록 수정
+ * @param {Object} inputData 사용자 입력 데이터
+ * @returns {Boolean} 검증 결과
+ */
+setInputData(inputData) {
+  try {
+    // 필수 입력값 검증
+    if (!inputData.startDate || !inputData.branch) {
+      console.log('필수 입력값 누락: ', inputData);
+      return false;
+    }
     
-    /**
-     * 저축액 계산 실행
-     * @returns {Object} 계산 결과
-     */
-    calculate() {
-      try {
-        // 변수 초기화
-        const results = {
-          totalMonths: 0,
-          totalDeposit: 0,
-          totalMatched: 0,
-          interest: 0,
-          finalTotal: 0,
-          monthlyDetails: []
-        };
+    // 데이터 설정 - 만원 단위 입력을 원 단위로 변환 (× 10000)
+    this.data.startDate = new Date(inputData.startDate);
+    this.data.branch = inputData.branch;
+    this.data.deposits = {
+      2022: Number(inputData.deposits[2022]) * 10000 || 0,
+      2023: Number(inputData.deposits[2023]) * 10000 || 0,
+      2024: Number(inputData.deposits[2024]) * 10000 || 0,
+      2025: Number(inputData.deposits[2025]) * 10000 || 0
+    };
+    
+    console.log('입력 데이터 설정 완료: ', this.data);
+    return true;
+  } catch (error) {
+    console.error('입력 데이터 설정 오류: ', error);
+    return false;
+  }
+},
+
+/**
+ * 저축액 계산 실행 - 전역월까지 포함하도록 수정
+ * @returns {Object} 계산 결과
+ */
+calculate() {
+  try {
+    // 변수 초기화
+    const results = {
+      totalMonths: 0,
+      totalDeposit: 0,
+      totalMatched: 0,
+      interest: 0,
+      finalTotal: 0,
+      monthlyDetails: []
+    };
+    
+    // 복무 기간 계산
+    const startDate = new Date(this.data.startDate);
+    const totalMonths = this.constants.serviceMonths[this.data.branch];
+    
+    // 전역일 계산 - 복무 개월 수 추가
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + totalMonths);
+    
+    // 전역일이 포함된 월의 마지막 날로 설정 (전역월까지 포함)
+    const lastDayOfDischargeMonth = new Date(
+      endDate.getFullYear(),
+      endDate.getMonth() + 1,
+      0
+    );
+    
+    results.totalMonths = totalMonths;
+    
+    console.log('복무 기간: ', totalMonths, '개월');
+    console.log('입대일: ', startDate.toLocaleDateString());
+    console.log('전역일: ', endDate.toLocaleDateString());
+    console.log('전역월 마지막 날: ', lastDayOfDischargeMonth.toLocaleDateString());
+    
+    // 현재 날짜 (매월 반복 계산용)
+    let currentDate = new Date(startDate);
+    
+    // 매월 반복하며 납입액, 매칭액 계산 (전역월 포함)
+    // <= 로 변경하여 전역월까지 포함하도록 수정
+    while (currentDate <= endDate) {
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1; // 0부터 시작하므로 +1
+      
+      // 연도별 정책 정보 (없으면 2025 이후 동일 가정)
+      let yearMatchInfo = this.constants.matchInfo[currentYear];
+      if (!yearMatchInfo) {
+        yearMatchInfo = { matchPercent: 1.0, maxDeposit: 550000 };
+      }
+      
+      // 해당 연도의 사용자 입력 납입액
+      const userDeposit = this.getUserDepositForYear(currentYear);
+      
+      // 이번 달 납입액과 매칭액 계산
+      const thisMonthDeposit = Math.min(userDeposit, yearMatchInfo.maxDeposit);
+      const thisMonthMatch = thisMonthDeposit * yearMatchInfo.matchPercent;
+      
+      // 누적
+      results.totalDeposit += thisMonthDeposit;
+      results.totalMatched += thisMonthMatch;
+      
+      // 월별 상세 정보 저장
+      results.monthlyDetails.push({
+        date: new Date(currentDate),
+        year: currentYear,
+        month: currentMonth,
+        deposit: thisMonthDeposit,
+        match: thisMonthMatch,
+        runningTotal: results.totalDeposit + results.totalMatched
+      });
+      
+      // 다음 달로 이동
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+    
+    // 이자 계산 (원금에 대해 5% 단리)
+    results.interest = results.totalDeposit * this.constants.interestRate;
+    
+    // 최종 합계
+    results.finalTotal = results.totalDeposit + results.totalMatched + results.interest;
+    
+    console.log('계산 결과: ', results);
+    
+    // 결과 저장 및 반환
+    this.data.results = results;
+    return results;
+  } catch (error) {
+    console.error('계산 중 오류 발생: ', error);
+    return {
+      totalMonths: 0,
+      totalDeposit: 0,
+      totalMatched: 0,
+      interest: 0,
+      finalTotal: 0,
+      monthlyDetails: []
+    };
+  }
+},
         
         // 복무 기간 계산
         const startDate = new Date(this.data.startDate);
@@ -233,7 +319,7 @@
     },
     
     /**
-     * 공유용 URL 생성
+     * 공유용 URL 생성 - 여전히 원 단위 값으로 URL 생성
      * @returns {String} 공유 URL
      */
     generateShareUrl() {
@@ -244,6 +330,8 @@
         params.append('startDate', this.data.startDate.toISOString().split('T')[0]);
         params.append('branch', this.data.branch);
         
+        // 만원 단위로 변환하지 않고 원 단위 그대로 URL에 포함
+        // 이렇게 해야 기존 공유 URL과 호환성 유지
         Object.entries(this.data.deposits).forEach(([year, amount]) => {
           params.append(`deposit${year}`, amount);
         });
@@ -254,7 +342,6 @@
         return window.location.href;
       }
     }
-  };
 
   /**
    * VIEW: UI 업데이트 및 렌더링
@@ -333,69 +420,71 @@
     },
     
     /**
-     * 저장된 데이터로 폼 채우기
-     * @param {Object} data 저장된 입력 데이터
-     */
-    fillFormWithSavedData(data) {
-      try {
-        if (!data || !data.inputs) return;
-        
-        this.elements.startDate.value = new Date(data.inputs.startDate).toISOString().split('T')[0];
-        this.elements.branch.value = data.inputs.branch;
-        
-        this.elements.deposit2022.value = data.inputs.deposits[2022] || '';
-        this.elements.deposit2023.value = data.inputs.deposits[2023] || '';
-        this.elements.deposit2024.value = data.inputs.deposits[2024] || '';
-        this.elements.deposit2025.value = data.inputs.deposits[2025] || '';
-      } catch (error) {
-        console.error('저장 데이터로 폼 채우기 오류: ', error);
-      }
-    },
+ * 저장된 데이터로 폼 채우기 - 원 단위에서 만원 단위로 변환
+ * @param {Object} data 저장된 입력 데이터
+ */
+fillFormWithSavedData(data) {
+  try {
+    if (!data || !data.inputs) return;
     
-    /**
-     * URL 파라미터로 폼 채우기
-     */
-    fillFormFromUrlParams() {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        
-        if (params.has('startDate')) {
-          this.elements.startDate.value = params.get('startDate');
-        }
-        
-        if (params.has('branch')) {
-          this.elements.branch.value = params.get('branch');
-        }
-        
-        if (params.has('deposit2022')) {
-          this.elements.deposit2022.value = params.get('deposit2022');
-        }
-        
-        if (params.has('deposit2023')) {
-          this.elements.deposit2023.value = params.get('deposit2023');
-        }
-        
-        if (params.has('deposit2024')) {
-          this.elements.deposit2024.value = params.get('deposit2024');
-        }
-        
-        if (params.has('deposit2025')) {
-          this.elements.deposit2025.value = params.get('deposit2025');
-        }
-        
-        // URL 파라미터가 있다면 자동 계산
-        if (params.has('startDate') && params.has('branch')) {
-          setTimeout(() => {
-            if (this.elements.calculateBtn) {
-              this.elements.calculateBtn.click();
-            }
-          }, 500);
-        }
-      } catch (error) {
-        console.error('URL 파라미터로 폼 채우기 오류: ', error);
-      }
-    },
+    this.elements.startDate.value = new Date(data.inputs.startDate).toISOString().split('T')[0];
+    this.elements.branch.value = data.inputs.branch;
     
+    // 원 단위를 만원 단위로 변환 (÷ 10000)
+    this.elements.deposit2022.value = data.inputs.deposits[2022] ? (data.inputs.deposits[2022] / 10000) : '';
+    this.elements.deposit2023.value = data.inputs.deposits[2023] ? (data.inputs.deposits[2023] / 10000) : '';
+    this.elements.deposit2024.value = data.inputs.deposits[2024] ? (data.inputs.deposits[2024] / 10000) : '';
+    this.elements.deposit2025.value = data.inputs.deposits[2025] ? (data.inputs.deposits[2025] / 10000) : '';
+  } catch (error) {
+    console.error('저장 데이터로 폼 채우기 오류: ', error);
+  }
+},
+
+/**
+ * URL 파라미터로 폼 채우기 - 만원 단위 고려
+ */
+fillFormFromUrlParams() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    
+    if (params.has('startDate')) {
+      this.elements.startDate.value = params.get('startDate');
+    }
+    
+    if (params.has('branch')) {
+      this.elements.branch.value = params.get('branch');
+    }
+    
+    // URL 파라미터는 원 단위로 저장되어 있으므로 만원 단위로 변환
+    if (params.has('deposit2022')) {
+      this.elements.deposit2022.value = parseInt(params.get('deposit2022')) / 10000;
+    }
+    
+    if (params.has('deposit2023')) {
+      this.elements.deposit2023.value = parseInt(params.get('deposit2023')) / 10000;
+    }
+    
+    if (params.has('deposit2024')) {
+      this.elements.deposit2024.value = parseInt(params.get('deposit2024')) / 10000;
+    }
+    
+    if (params.has('deposit2025')) {
+      this.elements.deposit2025.value = parseInt(params.get('deposit2025')) / 10000;
+    }
+    
+    // URL 파라미터가 있다면 자동 계산
+    if (params.has('startDate') && params.has('branch')) {
+      setTimeout(() => {
+        if (this.elements.calculateBtn) {
+          this.elements.calculateBtn.click();
+        }
+      }, 500);
+    }
+  } catch (error) {
+    console.error('URL 파라미터로 폼 채우기 오류: ', error);
+  }
+},
+
     /**
      * 계산 결과 화면에 표시
      * @param {Object} results 계산 결과
